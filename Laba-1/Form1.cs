@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using System.Text.RegularExpressions;
+
 
 namespace Laba_1
 {
@@ -694,34 +694,68 @@ namespace Laba_1
             string text = rtb.Text;
 
             // Наше регулярное выражение для 7-значного номера xxx-xx-xx
-            var pattern = @"\b\d+(?:,\d+)?\b";
-            var matches = Regex.Matches(text, pattern);
+            //var pattern = @"\b\d+(?:,\d+)?\b";
+            //var matches = Regex.Matches(text, pattern);
 
-            if (matches.Count == 0)
+            //if (matches.Count == 0)
+            //{
+            //    splitContainer2.Panel2.Controls.Add(new RichTextBox
+            //    {
+            //        Dock = DockStyle.Fill,
+            //        ReadOnly = true,
+            //        Text = "Номера не найдены."
+            //    });
+            //    return;
+            //}
+
+            //// Таблица для вывода найденных номеров
+            //var dgv = new DataGridView
+            //{
+            //    Dock = DockStyle.Fill,
+            //    ReadOnly = true,
+            //    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            //};
+            //dgv.Columns.Add("Number", "Найденный номер");
+            //dgv.Columns.Add("Position", "Позиция");
+
+            //foreach (Match m in matches)
+            //{
+            //    int absPos = CalculateAbsolutePositionByIndex(text, m.Index);
+            //    dgv.Rows.Add(m.Value, absPos);
+            //}
+
+            //splitContainer2.Panel2.Controls.Add(dgv);
+
+            // 1) Создаём автомат
+            var automaton = new NumberAutomaton();
+
+            // 2) Ищем все вхождения
+            var found = automaton.FindMatches(text);
+
+            if (found.Count == 0)
             {
                 splitContainer2.Panel2.Controls.Add(new RichTextBox
                 {
                     Dock = DockStyle.Fill,
                     ReadOnly = true,
-                    Text = "Номера не найдены."
+                    Text = "Числа не найдены."
                 });
                 return;
             }
 
-            // Таблица для вывода найденных номеров
+            // 3) Выводим в DataGridView
             var dgv = new DataGridView
             {
                 Dock = DockStyle.Fill,
                 ReadOnly = true,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             };
-            dgv.Columns.Add("Number", "Найденный номер");
-            dgv.Columns.Add("Position", "Позиция");
+            dgv.Columns.Add("Value", "Найденное число");
+            dgv.Columns.Add("Pos", "Позиция (индекс 1-based)");
 
-            foreach (Match m in matches)
+            foreach (var (start, length, value) in found)
             {
-                int absPos = CalculateAbsolutePositionByIndex(text, m.Index);
-                dgv.Rows.Add(m.Value, absPos);
+                dgv.Rows.Add(value, start + 1);
             }
 
             splitContainer2.Panel2.Controls.Add(dgv);
